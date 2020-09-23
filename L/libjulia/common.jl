@@ -12,43 +12,102 @@ function configure(version)
     )
     sources = [
         ArchiveSource("https://github.com/JuliaLang/julia/releases/download/v$(version)/julia-$(version).tar.gz", checksums[version]),
+        DirectorySource("./bundled"),
     ]
 
     # Bash recipe for building across all platforms
     script = raw"""
+    apk update
+    apk add coreutils libuv-dev utf8proc
+
     cd $WORKSPACE/srcdir/julia*
 
-    FLAGS=(
-        USE_SYSTEM_LLVM=1
-        USE_SYSTEM_LIBUNWIND=1
-        USE_SYSTEM_PCRE=1
-        USE_SYSTEM_OPENLIBM=1
-        USE_SYSTEM_DSFMT=1
-        USE_SYSTEM_BLAS=1
-        LIBBLASNAME=libopenblas
-        USE_SYSTEM_LAPACK=1
-        LIBLAPACKNAME=libopenblas
-        USE_SYSTEM_GMP=1
-        USE_SYSTEM_MPFR=1
-        USE_SYSTEM_SUITESPARSE=1
-        USE_SYSTEM_LIBUV=1
-        USE_SYSTEM_UTF8PROC=1
-        USE_SYSTEM_MBEDTLS=1
-        USE_SYSTEM_LIBSSH2=1
-        USE_SYSTEM_CURL=1
-        USE_SYSTEM_LIBGIT2=1
-        USE_SYSTEM_PATCHELF=1
-        USE_SYSTEM_ZLIB=1
-        USE_SYSTEM_P7ZIP=1
+    # Apply patches
+    if [ -d $WORKSPACE/srcdir/patches ]; then
+    for f in $WORKSPACE/srcdir/patches/*.patch; do
+        echo "Applying path ${f}"
+        atomic_patch -p1 ${f}
+    done
+    fi
 
-        NO_GIT=1
-        prefix="${prefix}"
-        -j${nproc}
-    )
+    case ${target} in
+        *linux*)
+            OS=Linux
+        ;;
+        *mingw*)
+            OS=WINNT
+        ;;
+        *darwin*)
+            OS=Darwin
+        ;;
+        *freebsd*)
+            OS=FreeBSD
+        ;;
+    esac
+
+    cat << EOM >Make.host.user
+    override CC=/opt/x86_64-linux-musl/bin/x86_64-linux-musl-gcc
+    override CXX=/opt/x86_64-linux-musl/bin/x86_64-linux-musl-g++
+    override AR=/opt/x86_64-linux-musl/bin/x86_64-linux-musl-ar
+    USE_SYSTEM_LIBUV=1
+    USE_SYSTEM_UTF8PROC=1
+    # julia want's libuv.a
+    override LIBUV=/usr/lib/libuv.so
+    override LIBUTF8PROC=/usr/lib/libutf8proc.so.2
+    EOM
+
+    cat << EOM >Make.user
+    USE_SYSTEM_LLVM=1
+    USE_SYSTEM_LIBUNWIND=1
+    USE_SYSTEM_PCRE=1
+    USE_SYSTEM_OPENLIBM=1
+    USE_SYSTEM_DSFMT=1
+    USE_SYSTEM_BLAS=1
+    LIBBLASNAME=libopenblas
+    USE_SYSTEM_LAPACK=1
+    LIBLAPACKNAME=libopenblas
+    USE_SYSTEM_GMP=1
+    USE_SYSTEM_MPFR=1
+    USE_SYSTEM_SUITESPARSE=1
+    USE_SYSTEM_LIBUV=1
+    USE_SYSTEM_UTF8PROC=1
+    USE_SYSTEM_MBEDTLS=1
+    USE_SYSTEM_LIBSSH2=1
+    USE_SYSTEM_CURL=1
+    USE_SYSTEM_LIBGIT2=1
+    USE_SYSTEM_PATCHELF=1
+    USE_SYSTEM_ZLIB=1
+    USE_SYSTEM_P7ZIP=1
+
+    override XC_HOST=${target}
+    override OS=${OS}
+
+    #llvm-config-host is not available
+    override LLVMLINK=-L${prefix}/lib -lLLVM-9jl
+    override LLVM_CXXFLAGS=-I${prefix}/include # This is probably to simple
+    override LLVM_LDFLAGS=-L${prefix}/lib
+
+    # just nop this
+    override LLVM_CONFIG_HOST=
+
+    # julia expects libuv-julia.a
+    override LIBUV=${prefix}/lib/libuv.a
+
+    prefix=${prefix}
+    LOCALBASE=${prefix}
+    EOM
+
+    make BUILDING_HOST_TOOLS=1 NO_GIT=1 -j${nproc} -C src/flisp host/flisp
+    make clean -C src
+    make clean -C src/support
+    make clean -C src/flisp
+    make USE_CROSS_FLISP=1 NO_GIT=1 -j${nproc} julia-ui-release
 
     # compile libjulia but don't try to build a sysimage
-    make "${FLAGS[@]}" julia-ui-release
+    mkdir -p ${libdir}
+    mkdir -p ${includedir}/julia
     cp usr/lib/libjulia* ${libdir}/
+    cp -R -L usr/include/julia/* ${includedir}/julia
     install_license /usr/share/licenses/MIT
     """
 
