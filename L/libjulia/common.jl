@@ -108,7 +108,7 @@ function configure(version)
     mkdir -p ${includedir}/julia
     cp usr/lib/libjulia* ${libdir}/
     cp -R -L usr/include/julia/* ${includedir}/julia
-    install_license /usr/share/licenses/MIT
+    install_license LICENSE.md
     """
 
     # These are the platforms we will build for by default, unless further
@@ -159,4 +159,3 @@ function configure(version)
 
     return name, version, sources, script, platforms, products, dependencies
 end
-
