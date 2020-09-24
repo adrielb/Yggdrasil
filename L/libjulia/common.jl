@@ -176,6 +176,9 @@ function configure(version)
     # strings ABI. Hence we must use `expand_cxxstring_abis` below.
     platforms = supported_platforms()
     filter!(!=(Linux(:i686, libc=:musl)), platforms)
+
+    # For now skip FreeBSD...
+    filter!(p->!(p isa FreeBSD) platforms)
     platforms = expand_cxxstring_abis(platforms)
 
     # The products that we will ensure are always built
