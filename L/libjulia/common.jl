@@ -137,7 +137,12 @@ function configure(version)
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
     mkdir -p ${includedir}/julia
-    cp usr/lib/libjulia* ${libdir}/
+    if [[ "${target}" == *mingw* ]]; then
+        cp usr/bin/libjulia* ${bindir}/
+    else
+        cp usr/lib/libjulia* ${libdir}/
+    fi
+    
     cp -R -L usr/include/julia/* ${includedir}/julia
     install_license LICENSE.md
     """
