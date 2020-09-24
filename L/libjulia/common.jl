@@ -58,6 +58,18 @@ function configure(version)
     override OS=Linux
     EOM
 
+    if [[ "${target}" == *mingw* ]]; then
+        LLVMLINK="-L${prefix}/bin -lLLVM"
+        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+        LLVM_LDFLAGS="-L${prefix}/bin"
+        LDFLAGS="-L${prefix}/bin"
+    else
+        LLVMLINK="-L${prefix}/lib -lLLVM-9jl"
+        LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+        LLVM_LDFLAGS="-L${prefix}/lib"
+        LDFLAGS=""
+    fi
+
     cat << EOM >Make.user
     USE_SYSTEM_LLVM=1
     USE_SYSTEM_LIBUNWIND=1
@@ -86,12 +98,16 @@ function configure(version)
     override BUILD_OS=Linux
 
     #llvm-config-host is not available
-    override LLVMLINK=-L${prefix}/lib -lLLVM-9jl
-    override LLVM_CXXFLAGS=-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
-    override LLVM_LDFLAGS=-L${prefix}/lib
+    override LLVMLINK=${LLVMLINK}
+    override LLVM_CXXFLAGS=${LLVM_CXXFLAGS}
+    override LLVM_LDFLAGS=${LLVM_LDFLAGS}
 
     # just nop this
     override LLVM_CONFIG_HOST=
+
+    # we only run flisp and we built that for Linux
+    override spawn = \$(1)
+    override cygpath_w = \$(1)
 
     # julia expects libuv-julia.a
     override LIBUV=${prefix}/lib/libuv.a
@@ -100,12 +116,17 @@ function configure(version)
     LOCALBASE=${prefix}
     EOM
 
+    # Add file to one of the `STD_LIB_PATH`
+    if [[ "${target}" == *mingw* ]]; then
+        cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
+    fi
+
     make BUILDING_HOST_TOOLS=1 NO_GIT=1 -j${nproc} -C src/flisp host/flisp
     make clean -C src
     make clean -C src/support
     make clean -C src/flisp
     # compile libjulia but don't try to build a sysimage
-    make USE_CROSS_FLISP=1 NO_GIT=1 -j${nproc} julia-ui-release
+    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} -j${nproc} julia-ui-release
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
