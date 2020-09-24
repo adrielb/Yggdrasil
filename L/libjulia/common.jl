@@ -72,7 +72,8 @@ function configure(version)
 
     cat << EOM >Make.user
     USE_SYSTEM_LLVM=1
-    USE_SYSTEM_LIBUNWIND=1
+    # USE_SYSTEM_LIBUNWIND=1
+
     USE_SYSTEM_PCRE=1
     USE_SYSTEM_OPENLIBM=1
     USE_SYSTEM_DSFMT=1
@@ -80,7 +81,7 @@ function configure(version)
     LIBBLASNAME=libopenblas
     USE_SYSTEM_LAPACK=1
     LIBLAPACKNAME=libopenblas
-    USE_SYSTEM_GMP=1
+    # USE_SYSTEM_GMP=1
     USE_SYSTEM_MPFR=1
     USE_SYSTEM_SUITESPARSE=1
     USE_SYSTEM_LIBUV=1
@@ -111,6 +112,9 @@ function configure(version)
 
     # julia expects libuv-julia.a
     override LIBUV=${prefix}/lib/libuv.a
+
+    override BB_TRIPLET_LIBGFORTRAN_CXXABI=${bb_full_target}
+    override USE_BINARYBUILDER=1
 
     prefix=${prefix}
     LOCALBASE=${prefix}
@@ -170,8 +174,8 @@ function configure(version)
 
     # Dependencies that must be installed before this package can be built/used
     dependencies = [
-        Dependency("LibUnwind_jll"),
-        Dependency("LibOSXUnwind_jll"),
+        # Dependency("LibUnwind_jll"),
+        # Dependency("LibOSXUnwind_jll"),
         Dependency(PackageSpec(name="PCRE2_jll", version=v"10.31")),
         Dependency("OpenLibm_jll"),
         Dependency("dSFMT_jll"),
@@ -189,19 +193,19 @@ function configure(version)
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.5")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"8.0.1")))
         push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.0.2")))
-        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
+        # push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
     elseif version.major == 1 && version.minor == 5
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.9")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
         push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.1.0")))
-        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
+        # push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.1.2")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"0.28.2")))
     elseif version.major == 1 && version.minor == 6
         push!(dependencies, Dependency(PackageSpec(name="OpenBLAS_jll", version=v"0.3.10")))
         push!(dependencies, Dependency(PackageSpec(name="libLLVM_jll", version=v"9.0.1")))
         push!(dependencies, Dependency(PackageSpec(name="MPFR_jll", version=v"4.1.0")))
-        push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.2.0")))
+        # push!(dependencies, Dependency(PackageSpec(name="GMP_jll", version=v"6.2.0")))
         push!(dependencies, Dependency(PackageSpec(name="LibGit2_jll", version=v"1.0.1")))
     end
 
