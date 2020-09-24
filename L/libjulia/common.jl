@@ -101,9 +101,10 @@ function configure(version)
     make clean -C src
     make clean -C src/support
     make clean -C src/flisp
+    # compile libjulia but don't try to build a sysimage
     make USE_CROSS_FLISP=1 NO_GIT=1 -j${nproc} julia-ui-release
 
-    # compile libjulia but don't try to build a sysimage
+    # 'manually' install libraries and headers
     mkdir -p ${libdir}
     mkdir -p ${includedir}/julia
     cp usr/lib/libjulia* ${libdir}/
