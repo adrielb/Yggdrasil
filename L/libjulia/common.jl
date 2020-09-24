@@ -131,6 +131,9 @@ function configure(version)
     mkdir -p usr/lib
     cp ${prefix}/lib/libopenlibm.a usr/lib/
 
+    # Mac build complains about checksum
+    rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
+
     # compile libjulia but don't try to build a sysimage
     make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} -j${nproc} julia-ui-release
 
