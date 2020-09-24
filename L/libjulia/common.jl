@@ -150,9 +150,9 @@ function configure(version)
     mkdir -p ${libdir}
     mkdir -p ${includedir}/julia
     if [[ "${target}" == *mingw* ]]; then
-        cp usr/bin/libjulia* ${bindir}/
+        cp -r usr/bin/libjulia* ${bindir}/
     else
-        cp usr/lib/libjulia* ${libdir}/
+        cp -r usr/lib/libjulia* ${libdir}/
     fi
     
     cp -R -L usr/include/julia/* ${includedir}/julia
