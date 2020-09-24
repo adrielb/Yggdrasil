@@ -125,6 +125,12 @@ function configure(version)
     make clean -C src
     make clean -C src/support
     make clean -C src/flisp
+
+    # We don't trust the system libm in places
+    # So we include a private copy of libopenlibm
+    mkdir -p usr/lib
+    cp ${prefix}/lib/libopenlibm.a usr/lib/
+
     # compile libjulia but don't try to build a sysimage
     make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} -j${nproc} julia-ui-release
 
