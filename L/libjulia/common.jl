@@ -63,16 +63,22 @@ function configure(version)
         LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
         LLVM_LDFLAGS="-L${prefix}/bin"
         LDFLAGS="-L${prefix}/bin"
+        CFLAGS="-I${prefix}/include"
+        CXXFLAGS="-I${prefix}/include"
     elif [[ "${target}" == *apple* ]]; then
         LLVMLINK="-L${prefix}/lib -lLLVM"
         LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
         LLVM_LDFLAGS="-L${prefix}/lib"
-        LDFLAGS=""
+        LDFLAGS="-L${prefix}/lib"
+        CFLAGS="-I${prefix}/include"
+        CXXFLAGS="-I${prefix}/include"
     else
         LLVMLINK="-L${prefix}/lib -lLLVM-9jl"
         LLVM_CXXFLAGS="-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
         LLVM_LDFLAGS="-L${prefix}/lib"
-        LDFLAGS=""
+        LDFLAGS="-L${prefix}/lib"
+        CFLAGS="-I${prefix}/include"
+        CXXFLAGS="-I${prefix}/include"
     fi
 
     cat << EOM >Make.user
@@ -144,7 +150,7 @@ function configure(version)
     rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
 
     # compile libjulia but don't try to build a sysimage
-    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} -j${nproc} VERBOSE=1 julia-ui-release
+    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} CFLAGS=${CFLAGS} CXXFLAGS=${CXXFLAGS} -j${nproc} VERBOSE=1 julia-ui-release
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
@@ -190,7 +196,6 @@ function configure(version)
         Dependency("MbedTLS_jll"),
         Dependency("LibSSH2_jll"),
         Dependency("LibCURL_jll"),
-        Dependency("Patchelf_jll"),
         Dependency("Zlib_jll"),
         Dependency("p7zip_jll"),
     ]
