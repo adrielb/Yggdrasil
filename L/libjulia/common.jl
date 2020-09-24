@@ -46,9 +46,9 @@ function configure(version)
     esac
 
     cat << EOM >Make.host.user
-    override CC=/opt/x86_64-linux-musl/bin/x86_64-linux-musl-gcc
-    override CXX=/opt/x86_64-linux-musl/bin/x86_64-linux-musl-g++
-    override AR=/opt/x86_64-linux-musl/bin/x86_64-linux-musl-ar
+    override CC=${CC_BUILD}
+    override CXX=${CXX_BUILD}
+    override AR=${AR_BUILD}
     USE_SYSTEM_LIBUV=1
     USE_SYSTEM_UTF8PROC=1
     # julia want's libuv.a
