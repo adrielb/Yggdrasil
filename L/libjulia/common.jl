@@ -84,7 +84,7 @@ function configure(version)
 
     #llvm-config-host is not available
     override LLVMLINK=-L${prefix}/lib -lLLVM-9jl
-    override LLVM_CXXFLAGS=-I${prefix}/include # This is probably to simple
+    override LLVM_CXXFLAGS=-I${prefix}/include -std=c++14 -fno-exceptions -fno-rtti -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
     override LLVM_LDFLAGS=-L${prefix}/lib
 
     # just nop this
