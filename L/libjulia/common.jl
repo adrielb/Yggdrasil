@@ -130,7 +130,7 @@ function configure(version)
         cp /opt/*-w64-mingw32/*-w64-mingw32/sys-root/bin/libwinpthread-1.dll /opt/*-w64-mingw32/*-mingw32/sys-root/lib/
     fi
 
-    make BUILDING_HOST_TOOLS=1 NO_GIT=1 -j${nproc} -C src/flisp host/flisp
+    make BUILDING_HOST_TOOLS=1 NO_GIT=1 -j${nproc} VERBOSE=1 -C src/flisp host/flisp
     make clean -C src
     make clean -C src/support
     make clean -C src/flisp
@@ -144,7 +144,7 @@ function configure(version)
     rm -rf /workspace/srcdir/julia-1.5.1/deps/checksums/lapack-3.9.0.tgz
 
     # compile libjulia but don't try to build a sysimage
-    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} -j${nproc} julia-ui-release
+    make USE_CROSS_FLISP=1 NO_GIT=1 LDFLAGS=${LDFLAGS} -j${nproc} VERBOSE=1 julia-ui-release
 
     # 'manually' install libraries and headers
     mkdir -p ${libdir}
